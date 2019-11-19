@@ -1,0 +1,24 @@
+{
+  "name": "hga-view",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "pixi-viewport": "^4.3.3",
+    "pixi.js": "^5.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.7.2",
+    "@babel/preset-env": "^7.7.1",
+    "babel-loader": "^8.0.6",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "main": "webpack.config.js",
+  "scripts": {
+    "watch": "webpack --mode development --watch",
+    "start": "webpack --mode development",
+    "deploy": "webpack --mode production"
+  },
+  "author": "",
+  "license": "ISC"
+}
