@@ -1,7 +1,38 @@
 import * as PIXI from 'pixi.js'
 import { Viewport } from 'pixi-viewport'
-import { result } from './response.json'
+import result10varsmall from './10-varsmall.json'
+import result10varlarge from './10-varlarge.json'
+import result20varsmall from './20-varsmall.json'
+import result20varlarge from './20-varlarge.json'
 
+const db = {
+  '10-varsmall': result10varsmall,
+  '10-varlarge': result10varlarge,
+  '20-varsmall': result20varsmall,
+  '20-varlarge': result20varlarge
+}
+
+const result = db[FILE]
+
+let maxFit = 0
+let minFit = 100000000000
+for (let key in result.fitdb) {
+  let chro = result.fitdb[key]
+  if (chro.fitness === 0) {
+    continue
+  }
+  if (chro.fitness > maxFit) {
+    maxFit = chro.fitness
+  }
+  if (chro.fitness < minFit) {
+    minFit = chro.fitness
+  }
+}
+let mm = maxFit - minFit
+maxFit = maxFit - mm * 0.4
+minFit = minFit - mm * 0.05
+
+console.log(maxFit, minFit)
 function findChro(gen, chro) {
   for (let c of gen) {
     if (c.chro.every((v, key) => chro[key] === v)) {
@@ -134,7 +165,7 @@ function updateInfo(chro, infoCon) {
   }
   textInfo.text = `fitness: ${chro.fitness.toFixed(3)}, method: ${
     chro.method
-  }\nchro: ${chro.chro}`
+  }, iter_time: ${chro.iter_time}\nchro: ${chro.chro}`
 }
 
 function highlight(chro, hlCon, seqCon) {
@@ -155,60 +186,81 @@ function highlight(chro, hlCon, seqCon) {
 }
 
 function preview(chro, previewCon, seqCon) {
-  selectChro(chro, previewCon, seqCon, undefined, undefined, undefined, false)
+  selectChro(chro, previewCon, seqCon, undefined, undefined, false)
 }
 
-function selectChro(
+let selectChroRelationDB = []
+const MAX_REC = 8
+
+function constructSelectChro(
   chro,
   linksCon,
   seqCon,
-  arrows,
-  dot,
-  rec,
+  rec = 0,
   recursive = true
 ) {
-  const MAX_REC = 8
-  if (!rec || rec <= 0) {
-    rec = MAX_REC
-    arrows = linksCon.addChild(new PIXI.Graphics())
-    dot = linksCon.addChild(new PIXI.Graphics())
-  } else {
-    rec = rec - 1
+  let slot = Math.floor(rec / MAX_REC)
+  if (selectChroRelationDB.length <= slot) {
+    selectChroRelationDB.push([])
   }
+  let dbSlot = selectChroRelationDB[slot]
+  rec = rec + 1
 
-  let sprite = chro.sprite
-  let pos = sprite.toLocal({ x: 0, y: 0 }, seqCon)
-  pos = {
-    x: -pos.x + options.chro.width / 2,
-    y: -pos.y + options.chro.height / 2
+  if (!dbSlot.every(v => v[0] !== chro)) {
+    return
   }
-
-  arrows.beginFill(0xffffff, 1)
-  arrows.drawCircle(pos.x, pos.y, 3)
-  arrows.endFill()
 
   for (let trace of chro.trace) {
-    let posT = trace.sprite.toLocal({ x: 0, y: 0 }, seqCon)
-    posT = {
-      x: -posT.x + options.chro.width / 2,
-      y: -posT.y + options.chro.height / 2
-    }
-    /*
-    let circle = linksCon.addChild(new PIXI.Graphics())
-    circle.beginFill(0xffffff, 1)
-    circle.drawCircle(posT.x, posT.y, 3)
-    circle.endFill()
-    */
+    dbSlot.push([chro, trace, chro.method])
     if (recursive) {
-      selectChro(trace, linksCon, seqCon, arrows, dot, rec)
+      constructSelectChro(trace, linksCon, seqCon, rec, recursive)
     }
+  }
+}
 
-    // let arrow = linksCon.addChild(new PIXI.Graphics())
+function selectChro(chro, linksCon, seqCon, recursive = true) {
+  selectChroRelationDB = []
+  let rec = 0
+  constructSelectChro(chro, linksCon, seqCon, rec, recursive)
 
-    dot
-      .lineStyle(1, options.color.methods[chro.method])
-      .moveTo(pos.x, pos.y)
-      .lineTo(posT.x, posT.y)
+  // draw
+  let drawedDot = []
+  for (let slot of selectChroRelationDB) {
+    let arrow = linksCon.addChild(new PIXI.Graphics())
+    let dot = linksCon.addChild(new PIXI.Graphics())
+
+    for (let combo of slot) {
+      let [kid, parent, method] = combo
+
+      let chro = kid
+      let sprite = chro.sprite
+      let pos = sprite.toLocal({ x: 0, y: 0 }, seqCon)
+      pos = {
+        x: -pos.x + options.chro.width / 2,
+        y: -pos.y + options.chro.height / 2
+      }
+
+      // draw the center dot
+      if (!drawedDot.includes(kid)) {
+        dot.beginFill(0xffffff, 1)
+        dot.drawCircle(pos.x, pos.y, 3)
+        dot.endFill()
+
+        drawedDot.push(kid)
+      }
+
+      // draw the relationship
+      let posT = parent.sprite.toLocal({ x: 0, y: 0 }, seqCon)
+      posT = {
+        x: -posT.x + options.chro.width / 2,
+        y: -posT.y + options.chro.height / 2
+      }
+
+      arrow
+        .lineStyle(1, options.color.methods[method])
+        .moveTo(pos.x, pos.y)
+        .lineTo(posT.x, posT.y)
+    }
   }
 }
 
@@ -241,9 +293,6 @@ function hslToRgb(h, s, l) {
     Math.round(b * 255)
   )
 }
-
-let maxFit = 40
-let minFit = 15
 
 function calColor(fit) {
   let percentage = (maxFit - fit) / (maxFit - minFit)
@@ -436,15 +485,6 @@ function setup() {
   seqCon.addChild(hlCon)
   seqCon.addChild(linksCon)
   seqCon.addChild(previewCon)
-  let circle = seqCon.addChild(new PIXI.Graphics())
-  circle.beginFill(0xffffff, 1)
-  circle.drawCircle(0, 0, 3)
-  circle.endFill()
-
-  circle = linksCon.addChild(new PIXI.Graphics())
-  circle.beginFill(0xfff000, 1)
-  circle.drawCircle(0, 0, 7)
-  circle.endFill()
 
   app.stage.addChild(infoCon)
 }

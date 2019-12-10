@@ -1,20 +1,109 @@
 <!DOCTYPE html>
 
 <head>
+  <meta charset="utf8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, shrink-to-fit=no"
+  />
+
   <title>HybridGA Viewing Testing</title>
+  <link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+    crossorigin="anonymous"
+  />
+
   <style>
-    body,
-    * {
-      margin: 0;
-      padding: 0;
-      border: none;
+    .full-block-link {
+      width: 100%;
+      display: block;
+      text-align: center;
+      font-size: 30px;
     }
-    body {
-      overflow: hidden;
+
+    .responsive-square {
+      margin: 0 auto;
+      width: 100%; /* 寬佔整個寬度的 35%*/
+      padding-bottom: 70%; /* 高佔整個寬度的 35%*/
+      position: relative;
+    }
+
+    .content {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: 0; /* 水平垂直置中內容*/
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
   </style>
 </head>
 
 <body>
-  <script src="./dist/index.bundle.js"></script>
+  <div class="container-fluid mb-3" style="padding-top: 200px;">
+    <div class="row">
+      <div class="col-sm-6 mb-3">
+        <div class="card">
+          <div class="card-body">
+            <div class="card-text responsive-square">
+              <img
+                src="public/10tasks.png"
+                class="content"
+                style="width: 100%;"
+              />
+            </div>
+
+            <div class="container">
+              <div class="row">
+                <div class="col-sm-6">
+                  <a class="full-block-link" href="10-varsmall.html">
+                    10-varsmall
+                  </a>
+                </div>
+                <div class="col-sm-6">
+                  <a class="full-block-link" href="10-varlarge.html">
+                    10-varlarge
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 mb-3">
+        <div class="card">
+          <div class="card-body">
+            <div class="card-text responsive-square">
+              <img
+                src="public/20tasks.png"
+                class="content"
+                style="width: 100%;"
+              />
+            </div>
+
+            <div class="container">
+              <div class="row">
+                <div class="col-sm-6">
+                  <a class="full-block-link" href="20-varsmall.html">
+                    20-varsmall
+                  </a>
+                </div>
+                <div class="col-sm-6">
+                  <a class="full-block-link" href="20-varlarge.html">
+                    20-varlarge
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul></ul>
 </body>
